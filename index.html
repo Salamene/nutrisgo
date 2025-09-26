@@ -1,0 +1,1972 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Controle Nutricional Escolar</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #B0E0E6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+
+        .school-selector {
+            background: #FFFACD;
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        .school-selector h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .school-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .school-card {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 20px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1em;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .school-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .school-card.active {
+            background: #B0E0E6;
+            transform: translateY(-3px);
+        }
+
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .module-card {
+            background: #FFFACD;
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .module-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+        }
+
+        .module-card h3 {
+            color: #2c3e50;
+            font-size: 1.4em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .module-card .icon {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .btn {
+            background: #B0E0E6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #FFFACD;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .close {
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #aaa;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #B0E0E6;
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: #f8f9ff;
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .status-ok {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+
+        .status-alert {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .status-critical {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: #FFFACD;
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 1em;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4CAF50;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1001;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.error {
+            background: #f44336;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .modules-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .school-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🍎 Sistema de Controle Nutricional Escolar</h1>
+            <p>Gestão completa da alimentação escolar - 9 unidades educacionais</p>
+        </div>
+
+        <div class="school-selector">
+            <h3>📍 Selecione a Unidade Educacional:</h3>
+            <div class="school-grid">
+                <button class="school-card active" onclick="selectSchool('todas')">
+                    📊 Todas as Unidades
+                </button>
+                <button class="school-card" onclick="selectSchool('tonon')">
+                    🏫 EM Armelindo Tonon
+                </button>
+                <button class="school-card" onclick="selectSchool('enio')">
+                    🏫 EM Ênio Carlos
+                </button>
+                <button class="school-card" onclick="selectSchool('filinto')">
+                    🏫 EM Filinto Muller
+                </button>
+                <button class="school-card" onclick="selectSchool('nilma')">
+                    🏫 EM Nilma Glória
+                </button>
+                <button class="school-card" onclick="selectSchool('pingo')">
+                    🏫 EM Pingo de Gente
+                </button>
+                <button class="school-card" onclick="selectSchool('crianca')">
+                    🧸 CMEI Criança Feliz
+                </button>
+                <button class="school-card" onclick="selectSchool('gramado')">
+                    🧸 CMEI Jardim Gramado
+                </button>
+                <button class="school-card" onclick="selectSchool('mundo')">
+                    🧸 CMEI Mundo da Criança
+                </button>
+                <button class="school-card" onclick="selectSchool('cidadao')">
+                    🧸 CMEI Pequeno Cidadão
+                </button>
+            </div>
+        </div>
+
+        <div class="dashboard-stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalRefeicoes">0</div>
+                <div class="stat-label">Refeições Hoje</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="estoqueAlert">0</div>
+                <div class="stat-label">Alertas de Estoque</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="gasConsumo">0</div>
+                <div class="stat-label">Consumo de Gás (kg)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="aproveitamento">0%</div>
+                <div class="stat-label">Aproveitamento</div>
+            </div>
+        </div>
+
+        <!-- Status de Conexão -->
+        <div style="background: rgba(255, 255, 255, 0.9); border-radius: 10px; padding: 15px; margin-bottom: 20px; text-align: center;">
+            <span id="connectionStatus" style="color: #4CAF50; font-weight: bold;">🟢 Conectado</span>
+            <span style="margin: 0 20px;">|</span>
+            <span id="lastUpdate" style="color: #666;">Última atualização: --</span>
+            <span style="margin: 0 20px;">|</span>
+            <button onclick="loadAllData()" style="background: none; border: none; color: #2196F3; cursor: pointer; font-weight: bold;">🔄 Atualizar Agora</button>
+        </div>
+
+        <div class="modules-grid">
+            <div class="module-card">
+                <h3><span class="icon">🍽️</span>Controle de Refeições</h3>
+                <p>Gerencie o número de refeições servidas por período e unidade.</p>
+                <button class="btn" onclick="openModal('refeicoesModal')">Visualizar</button>
+                <button class="btn btn-success" onclick="openModal('addRefeicaoModal')">Adicionar</button>
+            </div>
+
+            <div class="module-card">
+                <h3><span class="icon">📦</span>Controle de Estoque</h3>
+                <p>Monitore o estoque de alimentos e ingredientes.</p>
+                <button class="btn" onclick="openModal('estoqueModal')">Visualizar</button>
+                <button class="btn btn-success" onclick="openModal('addEstoqueModal')">Adicionar</button>
+            </div>
+
+            <div class="module-card">
+                <h3><span class="icon">📊</span>Resto-Ingestão</h3>
+                <p>Controle do desperdício alimentar por refeição.</p>
+                <button class="btn" onclick="openModal('restoModal')">Visualizar</button>
+                <button class="btn btn-success" onclick="openModal('addRestoModal')">Adicionar</button>
+            </div>
+
+            <div class="module-card">
+                <h3><span class="icon">🩺</span>Laudos Diagnóstico</h3>
+                <p>Gerencie laudos e diagnósticos nutricionais.</p>
+                <button class="btn" onclick="openModal('laudosModal')">Visualizar</button>
+                <button class="btn btn-success" onclick="openModal('addLaudoModal')">Adicionar</button>
+            </div>
+
+            <div class="module-card">
+                <h3><span class="icon">📅</span>Cardápio Mensal</h3>
+                <p>Planeje e visualize cardápios mensais.</p>
+                <button class="btn" onclick="openModal('cardapioModal')">Visualizar</button>
+                <button class="btn btn-success" onclick="openModal('addCardapioModal')">Editar</button>
+            </div>
+
+            <div class="module-card">
+                <h3><span class="icon">🛒</span>Pedidos de Compras</h3>
+                <p>Controle pedidos semanais de compras.</p>
+                <button class="btn" onclick="openModal('comprasModal')">Visualizar</button>
+                <button class="btn btn-success" onclick="openModal('addCompraModal')">Novo Pedido</button>
+            </div>
+
+            <div class="module-card">
+                <h3><span class="icon">🔥</span>Controle de Gás</h3>
+                <p>Monitore o consumo de gás por unidade.</p>
+                <button class="btn" onclick="openModal('gasModal')">Visualizar</button>
+                <button class="btn btn-success" onclick="openModal('addGasModal')">Registrar</button>
+            </div>
+
+            <div class="module-card">
+                <h3><span class="icon">📋</span>POPs e Higienização</h3>
+                <p>Procedimentos operacionais e controle de limpeza.</p>
+                <button class="btn" onclick="openModal('popsModal')">Visualizar</button>
+                <button class="btn btn-success" onclick="openModal('addPopModal')">Adicionar</button>
+            </div>
+
+            <div class="module-card">
+                <h3><span class="icon">🥗</span>Consumo Diário</h3>
+                <p>Registre o consumo diário de gêneros alimentícios.</p>
+                <button class="btn" onclick="openModal('consumoModal')">Visualizar</button>
+                <button class="btn btn-success" onclick="openModal('addConsumoModal')">Registrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modais -->
+    <div id="refeicoesModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('refeicoesModal')">&times;</span>
+            <h2>📊 Controle de Refeições</h2>
+            <div class="table-container">
+                <table id="refeicoesTable">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Unidade</th>
+                            <th>Café da Manhã</th>
+                            <th>Lanche Matutino</th>
+                            <th>Almoço</th>
+                            <th>Lanche Vespertino</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="refeicoesTableBody">
+                        <!-- Dados serão carregados aqui -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="addRefeicaoModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('addRefeicaoModal')">&times;</span>
+            <h2>➕ Adicionar Controle de Refeições</h2>
+            <form id="refeicaoForm">
+                <div class="form-group">
+                    <label>Data:</label>
+                    <input type="date" name="data" required>
+                </div>
+                <div class="form-group">
+                    <label>Unidade:</label>
+                    <select name="unidade" required>
+                        <option value="">Selecione...</option>
+                        <option value="tonon">EM Armelindo Tonon</option>
+                        <option value="enio">EM Ênio Carlos</option>
+                        <option value="filinto">EM Filinto Muller</option>
+                        <option value="nilma">EM Nilma Glória</option>
+                        <option value="pingo">EM Pingo de Gente</option>
+                        <option value="crianca">CMEI Criança Feliz</option>
+                        <option value="gramado">CMEI Jardim Gramado</option>
+                        <option value="mundo">CMEI Mundo da Criança</option>
+                        <option value="cidadao">CMEI Pequeno Cidadão</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Café da Manhã:</label>
+                    <input type="number" name="cafe" min="0" value="0">
+                </div>
+                <div class="form-group">
+                    <label>Lanche Matutino:</label>
+                    <input type="number" name="lanche_matutino" min="0" value="0">
+                </div>
+                <div class="form-group">
+                    <label>Almoço:</label>
+                    <input type="number" name="almoco" min="0" value="0">
+                </div>
+                <div class="form-group">
+                    <label>Lanche Vespertino:</label>
+                    <input type="number" name="lanche_vespertino" min="0" value="0">
+                </div>
+                <button type="submit" class="btn btn-success">Salvar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Estoque -->
+    <div id="estoqueModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('estoqueModal')">&times;</span>
+            <h2>📦 Controle de Estoque</h2>
+            <div class="table-container">
+                <table id="estoqueTable">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Unidade</th>
+                            <th>Quantidade</th>
+                            <th>Estoque Mínimo</th>
+                            <th>Status</th>
+                            <th>Última Atualização</th>
+                        </tr>
+                    </thead>
+                    <tbody id="estoqueTableBody">
+                        <!-- Dados serão carregados aqui -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="addEstoqueModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('addEstoqueModal')">&times;</span>
+            <h2>➕ Atualizar Estoque</h2>
+            <form id="estoqueForm">
+                <div class="form-group">
+                    <label>Item:</label>
+                    <input type="text" name="item" required placeholder="Ex: Arroz, Feijão, Óleo...">
+                </div>
+                <div class="form-group">
+                    <label>Unidade:</label>
+                    <select name="unidade" required>
+                        <option value="">Selecione...</option>
+                        <option value="tonon">EM Armelindo Tonon</option>
+                        <option value="enio">EM Ênio Carlos</option>
+                        <option value="filinto">EM Filinto Muller</option>
+                        <option value="nilma">EM Nilma Glória</option>
+                        <option value="pingo">EM Pingo de Gente</option>
+                        <option value="crianca">CMEI Criança Feliz</option>
+                        <option value="gramado">CMEI Jardim Gramado</option>
+                        <option value="mundo">CMEI Mundo da Criança</option>
+                        <option value="cidadao">CMEI Pequeno Cidadão</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Quantidade:</label>
+                    <input type="number" name="quantidade" min="0" step="0.1" required>
+                </div>
+                <div class="form-group">
+                    <label>Unidade de Medida:</label>
+                    <select name="unidade_medida" required>
+                        <option value="kg">Quilogramas (kg)</option>
+                        <option value="g">Gramas (g)</option>
+                        <option value="l">Litros (l)</option>
+                        <option value="ml">Mililitros (ml)</option>
+                        <option value="un">Unidades</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Estoque Mínimo:</label>
+                    <input type="number" name="estoque_minimo" min="0" step="0.1" required>
+                </div>
+                <button type="submit" class="btn btn-success">Salvar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Resto-Ingestão -->
+    <div id="restoModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('restoModal')">&times;</span>
+            <h2>📊 Controle de Resto-Ingestão</h2>
+            <div class="table-container">
+                <table id="restoTable">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Unidade</th>
+                            <th>Refeição</th>
+                            <th>Preparado (g)</th>
+                            <th>Servido (g)</th>
+                            <th>Resto (g)</th>
+                            <th>% Resto</th>
+                        </tr>
+                    </thead>
+                    <tbody id="restoTableBody">
+                        <!-- Dados serão carregados aqui -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="addRestoModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('addRestoModal')">&times;</span>
+            <h2>➕ Adicionar Registro de Resto-Ingestão</h2>
+            <form id="restoForm">
+                <div class="form-group">
+                    <label>Data:</label>
+                    <input type="date" name="data" required>
+                </div>
+                <div class="form-group">
+                    <label>Unidade:</label>
+                    <select name="unidade" required>
+                        <option value="">Selecione...</option>
+                        <option value="tonon">EM Armelindo Tonon</option>
+                        <option value="enio">EM Ênio Carlos</option>
+                        <option value="filinto">EM Filinto Muller</option>
+                        <option value="nilma">EM Nilma Glória</option>
+                        <option value="pingo">EM Pingo de Gente</option>
+                        <option value="crianca">CMEI Criança Feliz</option>
+                        <option value="gramado">CMEI Jardim Gramado</option>
+                        <option value="mundo">CMEI Mundo da Criança</option>
+                        <option value="cidadao">CMEI Pequeno Cidadão</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Refeição:</label>
+                    <select name="refeicao" required>
+                        <option value="">Selecione...</option>
+                        <option value="cafe">Café da Manhã</option>
+                        <option value="lanche_matutino">Lanche Matutino</option>
+                        <option value="almoco">Almoço</option>
+                        <option value="lanche_vespertino">Lanche Vespertino</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Quantidade Preparada (g):</label>
+                    <input type="number" name="preparado" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label>Quantidade Servida (g):</label>
+                    <input type="number" name="servido" min="0" required>
+                </div>
+                <button type="submit" class="btn btn-success">Salvar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Laudos Diagnóstico -->
+    <div id="laudosModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('laudosModal')">&times;</span>
+            <h2>🩺 Laudos Diagnóstico</h2>
+            <div class="table-container">
+                <table id="laudosTable">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Unidade</th>
+                            <th>Aluno</th>
+                            <th>Diagnóstico</th>
+                            <th>Recomendação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="laudosTableBody">
+                        <!-- Dados serão carregados aqui -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="addLaudoModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('addLaudoModal')">&times;</span>
+            <h2>➕ Adicionar Laudo Diagnóstico</h2>
+            <form id="laudoForm">
+                <div class="form-group">
+                    <label>Data:</label>
+                    <input type="date" name="data" required>
+                </div>
+                <div class="form-group">
+                    <label>Unidade:</label>
+                    <select name="unidade" required>
+                        <option value="">Selecione...</option>
+                        <option value="tonon">EM Armelindo Tonon</option>
+                        <option value="enio">EM Ênio Carlos</option>
+                        <option value="filinto">EM Filinto Muller</option>
+                        <option value="nilma">EM Nilma Glória</option>
+                        <option value="pingo">EM Pingo de Gente</option>
+                        <option value="crianca">CMEI Criança Feliz</option>
+                        <option value="gramado">CMEI Jardim Gramado</option>
+                        <option value="mundo">CMEI Mundo da Criança</option>
+                        <option value="cidadao">CMEI Pequeno Cidadão</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Nome do Aluno:</label>
+                    <input type="text" name="aluno" required>
+                </div>
+                <div class="form-group">
+                    <label>Diagnóstico:</label>
+                    <textarea name="diagnostico" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Recomendação:</label>
+                    <textarea name="recomendacao" rows="3" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-success">Salvar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Cardápio Mensal -->
+    <div id="cardapioModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('cardapioModal')">&times;</span>
+            <h2>📅 Cardápio Mensal</h2>
+            <div class="table-container">
+                <table id="cardapioTable">
+                    <thead>
+                        <tr>
+                            <th>Mês/Ano</th>
+                            <th>Unidade</th>
+                            <th>Cardápio</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cardapioTableBody">
+                        <!-- Dados serão carregados aqui -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="addCardapioModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('addCardapioModal')">&times;</span>
+            <h2>➕ Editar Cardápio Mensal</h2>
+            <form id="cardapioForm">
+                <div class="form-group">
+                    <label>Mês/Ano:</label>
+                    <input type="month" name="mes_ano" required>
+                </div>
+                <div class="form-group">
+                    <label>Unidade:</label>
+                    <select name="unidade" required>
+                        <option value="">Selecione...</option>
+                        <option value="tonon">EM Armelindo Tonon</option>
+                        <option value="enio">EM Ênio Carlos</option>
+                        <option value="filinto">EM Filinto Muller</option>
+                        <option value="nilma">EM Nilma Glória</option>
+                        <option value="pingo">EM Pingo de Gente</option>
+                        <option value="crianca">CMEI Criança Feliz</option>
+                        <option value="gramado">CMEI Jardim Gramado</option>
+                        <option value="mundo">CMEI Mundo da Criança</option>
+                        <option value="cidadao">CMEI Pequeno Cidadão</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Conteúdo do Cardápio (HTML ou Texto):</label>
+                    <textarea name="conteudo" rows="10" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-success">Salvar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Pedidos de Compras -->
+    <div id="comprasModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('comprasModal')">&times;</span>
+            <h2>🛒 Pedidos de Compras</h2>
+            <div class="table-container">
+                <table id="comprasTable">
+                    <thead>
+                        <tr>
+                            <th>Semana</th>
+                            <th>Unidade</th>
+                            <th>Produtos</th>
+                            <th>Valor Total</th>
+                            <th>Status</th>
+                            <th>Entrega</th>
+                        </tr>
+                    </thead>
+                    <tbody id="comprasTableBody">
+                        <!-- Dados serão carregados aqui -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="addCompraModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('addCompraModal')">&times;</span>
+            <h2>➕ Novo Pedido de Compra</h2>
+            <form id="compraForm">
+                <div class="form-group">
+                    <label>Semana (Ex: 19-23/08):</label>
+                    <input type="text" name="semana" required>
+                </div>
+                <div class="form-group">
+                    <label>Unidade:</label>
+                    <select name="unidade" required>
+                        <option value="">Selecione...</option>
+                        <option value="todas">Todas as Unidades</option>
+                        <option value="tonon">EM Armelindo Tonon</option>
+                        <option value="enio">EM Ênio Carlos</option>
+                        <option value="filinto">EM Filinto Muller</option>
+                        <option value="nilma">EM Nilma Glória</option>
+                        <option value="pingo">EM Pingo de Gente</option>
+                        <option value="crianca">CMEI Criança Feliz</option>
+                        <option value="gramado">CMEI Jardim Gramado</option>
+                        <option value="mundo">CMEI Mundo da Criança</option>
+                        <option value="cidadao">CMEI Pequeno Cidadão</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Lista de Produtos:</label>
+                    <textarea name="produtos" rows="4" required placeholder="Ex: Arroz 50kg, Feijão 30kg, Carne 20kg..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Valor Total (R$):</label>
+                    <input type="number" name="valor_total" min="0" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>Status:</label>
+                    <select name="status" required>
+                        <option value="pendente">Pendente</option>
+                        <option value="aprovado">Aprovado</option>
+                        <option value="entregue">Entregue</option>
+                        <option value="cancelado">Cancelado</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Data de Entrega:</label>
+                    <input type="date" name="entrega" required>
+                </div>
+                <button type="submit" class="btn btn-success">Salvar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Controle de Gás -->
+    <div id="gasModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('gasModal')">&times;</span>
+            <h2>🔥 Controle de Gás</h2>
+            <div class="table-container">
+                <table id="gasTable">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Unidade</th>
+                            <th>Botijão Trocado</th>
+                            <th>Peso Anterior</th>
+                            <th>Peso Atual</th>
+                            <th>Consumo</th>
+                            <th>Dias de Uso</th>
+                        </tr>
+                    </thead>
+                    <tbody id="gasTableBody">
+                        <!-- Dados serão carregados aqui -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="addGasModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('addGasModal')">&times;</span>
+            <h2>➕ Registrar Consumo de Gás</h2>
+            <form id="gasForm">
+                <div class="form-group">
+                    <label>Data:</label>
+                    <input type="date" name="data" required>
+                </div>
+                <div class="form-group">
+                    <label>Unidade:</label>
+                    <select name="unidade" required>
+                        <option value="">Selecione...</option>
+                        <option value="tonon">EM Armelindo Tonon</option>
+                        <option value="enio">EM Ênio Carlos</option>
+                        <option value="filinto">EM Filinto Muller</option>
+                        <option value="nilma">EM Nilma Glória</option>
+                        <option value="pingo">EM Pingo de Gente</option>
+                        <option value="crianca">CMEI Criança Feliz</option>
+                        <option value="gramado">CMEI Jardim Gramado</option>
+                        <option value="mundo">CMEI Mundo da Criança</option>
+                        <option value="cidadao">CMEI Pequeno Cidadão</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Botijão foi trocado?</label>
+                    <select name="botijao_trocado" required>
+                        <option value="nao">Não</option>
+                        <option value="sim">Sim</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Peso Anterior (kg):</label>
+                    <input type="number" name="peso_anterior" min="0" step="0.1" required>
+                </div>
+                <div class="form-group">
+                    <label>Peso Atual (kg):</label>
+                    <input type="number" name="peso_atual" min="0" step="0.1" required>
+                </div>
+                <div class="form-group">
+                    <label>Dias de Uso:</label>
+                    <input type="number" name="dias_uso" min="1" required>
+                </div>
+                <button type="submit" class="btn btn-success">Salvar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de POPs e Higienização -->
+    <div id="popsModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('popsModal')">&times;</span>
+            <h2>📋 POPs (Procedimentos Operacionais Padrão)</h2>
+            <ul id="popsList" style="list-style: none; padding: 0;">
+                <!-- Dados serão carregados aqui -->
+            </ul>
+            <h2>🧽 Controle de Higienização</h2>
+            <div class="table-container">
+                <table id="higienizacaoTable">
+                    <thead>
+                        <tr>
+                            <th>Local</th>
+                            <th>Data/Hora</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="higienizacaoTableBody">
+                        <!-- Dados serão carregados aqui -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="addPopModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('addPopModal')">&times;</span>
+            <h2>➕ Adicionar POP</h2>
+            <form id="popForm">
+                <div class="form-group">
+                    <label>Código do POP:</label>
+                    <input type="text" name="codigo" required placeholder="Ex: POP 001">
+                </div>
+                <div class="form-group">
+                    <label>Descrição:</label>
+                    <textarea name="descricao" rows="3" required placeholder="Descreva o procedimento..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-success">Salvar</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="addHigienizacaoModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('addHigienizacaoModal')">&times;</span>
+            <h2>➕ Registrar Higienização</h2>
+            <form id="higienizacaoForm">
+                <div class="form-group">
+                    <label>Local:</label>
+                    <input type="text" name="local" required>
+                </div>
+                <div class="form-group">
+                    <label>Data e Hora da Limpeza:</label>
+                    <input type="datetime-local" name="data_hora" required>
+                </div>
+                <div class="form-group">
+                    <label>Status:</label>
+                    <select name="status" required>
+                        <option value="ok">OK</option>
+                        <option value="pendente">Pendente</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-success">Salvar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Consumo Diário -->
+    <div id="consumoModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('consumoModal')">&times;</span>
+            <h2>🥗 Consumo Diário de Gêneros Alimentícios</h2>
+            <div class="table-container">
+                <table id="consumoTable">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Unidade</th>
+                            <th>Produto</th>
+                            <th>Quantidade</th>
+                            <th>Unidade Medida</th>
+                            <th>Refeição</th>
+                            <th>Custo Unit. (R$)</th>
+                            <th>Custo Total (R$)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="consumoTableBody">
+                        <!-- Dados serão carregados aqui -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="addConsumoModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('addConsumoModal')">&times;</span>
+            <h2>➕ Registrar Consumo Diário</h2>
+            <form id="consumoForm">
+                <div class="form-group">
+                    <label>Data:</label>
+                    <input type="date" name="data" required>
+                </div>
+                <div class="form-group">
+                    <label>Unidade:</label>
+                    <select name="unidade" required>
+                        <option value="">Selecione...</option>
+                        <option value="tonon">EM Armelindo Tonon</option>
+                        <option value="enio">EM Ênio Carlos</option>
+                        <option value="filinto">EM Filinto Muller</option>
+                        <option value="nilma">EM Nilma Glória</option>
+                        <option value="pingo">EM Pingo de Gente</option>
+                        <option value="crianca">CMEI Criança Feliz</option>
+                        <option value="gramado">CMEI Jardim Gramado</option>
+                        <option value="mundo">CMEI Mundo da Criança</option>
+                        <option value="cidadao">CMEI Pequeno Cidadão</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Produto:</label>
+                    <input type="text" name="produto" required>
+                </div>
+                <div class="form-group">
+                    <label>Quantidade:</label>
+                    <input type="number" name="quantidade" min="0" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>Unidade de Medida:</label>
+                    <select name="unidade_medida" required>
+                        <option value="kg">Quilogramas (kg)</option>
+                        <option value="g">Gramas (g)</option>
+                        <option value="l">Litros (l)</option>
+                        <option value="ml">Mililitros (ml)</option>
+                        <option value="un">Unidades</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Refeição:</label>
+                    <select name="refeicao" required>
+                        <option value="">Selecione...</option>
+                        <option value="cafe">Café da Manhã</option>
+                        <option value="lanche_matutino">Lanche Matutino</option>
+                        <option value="almoco">Almoço</option>
+                        <option value="lanche_vespertino">Lanche Vespertino</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Custo Unitário (R$):</label>
+                    <input type="number" name="custo_unitario" min="0" step="0.01" required>
+                </div>
+                <button type="submit" class="btn btn-success">Salvar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Botões de ação flutuantes -->
+    <div style="position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 10px;">
+        <button class="btn" onclick="exportData()" title="Exportar Dados">
+            📥 Exportar
+        </button>
+        <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
+        <button class="btn btn-warning" onclick="document.getElementById('importFile').click()" title="Importar Dados">
+            📤 Importar
+        </button>
+    </div>
+
+    <!-- Notificação -->
+    <div id="notification" class="notification"></div>
+
+    <script>
+        // Configuração do Google Apps Script
+        // ⚠️ IMPORTANTE: Substitua pela URL do seu Google Apps Script publicado
+        // Planilha de dados: https://docs.google.com/spreadsheets/d/1u1sSYjNGrTuUjQ2mOxdl212Z8JNTWcm7dUVZKfxr2hk/edit?gid=0#gid=0
+        const APPS_SCRIPT_URL = "SEU_APPS_SCRIPT_URL_AQUI"; // Substitua pelo URL do seu Apps Script
+
+        // Dados em memória (cache local)
+        let dados = {
+            refeicoes: [],
+            estoque: [],
+            restoingestao: [],
+            laudos: [],
+            cardapio: [],
+            compras: [],
+            gas: [],
+            pops: [],
+            higienizacao: [],
+            consumo: []
+        };
+
+        let selectedSchool = 'todas';
+        let isLoading = false;
+        let lastUpdateTime = null;
+        let dataHash = null;
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAllData();
+            // Atualizar dados a cada 30 segundos (polling)
+            setInterval(loadAllData, 30000);
+            
+            // Verificar se há novos dados a cada 10 segundos quando há usuários ativos
+            setInterval(checkForUpdates, 10000);
+        });
+
+        // Função para carregar todos os dados do Google Sheets
+        async function loadAllData() {
+            if (isLoading) return;
+            isLoading = true;
+            
+            // Atualizar status de conexão
+            updateConnectionStatus('loading');
+
+            try {
+                const response = await fetch(`${APPS_SCRIPT_URL}?action=get_all_data`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Calcular hash dos dados para detectar mudanças
+                    const newDataHash = calculateDataHash(result.data);
+                    
+                    // Se há mudanças nos dados, atualizar e notificar
+                    if (dataHash && dataHash !== newDataHash) {
+                        showNotification('📊 Dados atualizados! Novas informações disponíveis.');
+                    }
+                    
+                    dataHash = newDataHash;
+                    dados = result.data;
+                    lastUpdateTime = new Date();
+                    
+                    updateDashboard();
+                    loadRefeicoes();
+                    loadEstoque();
+                    loadRestoIngestao();
+                    loadLaudos();
+                    loadCardapio();
+                    loadCompras();
+                    loadGas();
+                    loadPops();
+                    loadHigienizacao();
+                    loadConsumo();
+                    
+                    // Atualizar status de conexão
+                    updateConnectionStatus('connected');
+                } else {
+                    console.error('Erro ao carregar dados:', result.error);
+                    updateConnectionStatus('error');
+                }
+            } catch (error) {
+                console.error('Erro na requisição:', error);
+                updateConnectionStatus('error');
+            } finally {
+                isLoading = false;
+            }
+        }
+
+        // Função para verificar atualizações mais frequentemente
+        async function checkForUpdates() {
+            if (isLoading) return;
+            
+            try {
+                const response = await fetch(`${APPS_SCRIPT_URL}?action=get_all_data`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const newDataHash = calculateDataHash(result.data);
+                    
+                    // Se há mudanças, fazer update completo
+                    if (dataHash && dataHash !== newDataHash) {
+                        await loadAllData();
+                    }
+                }
+            } catch (error) {
+                // Silencioso para não spam de erros
+                console.log('Verificação de updates falhou:', error);
+            }
+        }
+
+        // Função para calcular hash dos dados (simples)
+        function calculateDataHash(data) {
+            const dataString = JSON.stringify(data);
+            let hash = 0;
+            for (let i = 0; i < dataString.length; i++) {
+                const char = dataString.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // Convert to 32bit integer
+            }
+            return hash.toString();
+        }
+
+        // Função para atualizar status de conexão
+        function updateConnectionStatus(status) {
+            const statusElement = document.getElementById('connectionStatus');
+            const lastUpdateElement = document.getElementById('lastUpdate');
+            
+            switch(status) {
+                case 'loading':
+                    statusElement.innerHTML = '🟡 Carregando...';
+                    statusElement.style.color = '#FF9800';
+                    break;
+                case 'connected':
+                    statusElement.innerHTML = '🟢 Conectado';
+                    statusElement.style.color = '#4CAF50';
+                    if (lastUpdateTime) {
+                        lastUpdateElement.innerHTML = `Última atualização: ${lastUpdateTime.toLocaleTimeString('pt-BR')}`;
+                    }
+                    break;
+                case 'error':
+                    statusElement.innerHTML = '🔴 Erro de Conexão';
+                    statusElement.style.color = '#f44336';
+                    break;
+            }
+        }
+
+        // Função para enviar dados para o Google Apps Script
+        async function sendToAppsScript(action, data) {
+            try {
+                const response = await fetch(`${APPS_SCRIPT_URL}?action=${action}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                return result;
+            } catch (error) {
+                console.error('Erro ao enviar dados:', error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        // Função para mostrar notificação
+        function showNotification(message, isError = false) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${isError ? 'error' : ''} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Seleção de escola
+        function selectSchool(school) {
+            selectedSchool = school;
+            document.querySelectorAll('.school-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            updateDashboard();
+            loadRefeicoes();
+            loadEstoque();
+            loadRestoIngestao();
+            loadLaudos();
+            loadCardapio();
+            loadCompras();
+            loadGas();
+            loadPops();
+            loadHigienizacao();
+            loadConsumo();
+        }
+
+        // Atualizar dashboard
+        function updateDashboard() {
+            const today = new Date().toISOString().split('T')[0];
+            
+            let totalRefeicoes = 0;
+            let estoqueAlert = 0;
+            let gasConsumo = 0;
+            let aproveitamento = 85;
+
+            // Calcular total de refeições
+            if (dados.refeicoes) {
+                dados.refeicoes.forEach(r => {
+                    if (r.data === today && (selectedSchool === 'todas' || r.unidade === selectedSchool)) {
+                        totalRefeicoes += parseInt(r.total) || 0;
+                    }
+                });
+            }
+
+            // Calcular alertas de estoque
+            if (dados.estoque) {
+                dados.estoque.forEach(e => {
+                    if ((selectedSchool === 'todas' || e.unidade === selectedSchool) && 
+                        parseFloat(e.quantidade) <= parseFloat(e.estoque_minimo)) {
+                        estoqueAlert++;
+                    }
+                });
+            }
+
+            // Calcular consumo de gás
+            if (dados.gas) {
+                dados.gas.forEach(g => {
+                    if (selectedSchool === 'todas' || g.unidade === selectedSchool) {
+                        gasConsumo += parseFloat(g.consumo) || 0;
+                    }
+                });
+            }
+
+            document.getElementById('totalRefeicoes').textContent = totalRefeicoes;
+            document.getElementById('estoqueAlert').textContent = estoqueAlert;
+            document.getElementById('gasConsumo').textContent = gasConsumo.toFixed(1);
+            document.getElementById('aproveitamento').textContent = aproveitamento + '%';
+        }
+
+        // Carregar tabela de refeições
+        function loadRefeicoes() {
+            const tbody = document.getElementById('refeicoesTableBody');
+            tbody.innerHTML = '';
+
+            if (!dados.refeicoes) return;
+
+            const filtered = dados.refeicoes.filter(r => 
+                selectedSchool === 'todas' || r.unidade === selectedSchool
+            );
+
+            filtered.forEach(r => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${formatDate(r.data)}</td>
+                    <td>${getSchoolName(r.unidade)}</td>
+                    <td>${r.cafe || 0}</td>
+                    <td>${r.lanche_matutino || 0}</td>
+                    <td>${r.almoco || 0}</td>
+                    <td>${r.lanche_vespertino || 0}</td>
+                    <td><strong>${r.total || 0}</strong></td>
+                `;
+            });
+        }
+
+        // Carregar tabela de estoque
+        function loadEstoque() {
+            const tbody = document.getElementById('estoqueTableBody');
+            tbody.innerHTML = '';
+
+            if (!dados.estoque) return;
+
+            const filtered = dados.estoque.filter(e => 
+                selectedSchool === 'todas' || e.unidade === selectedSchool
+            );
+
+            filtered.forEach(e => {
+                const row = tbody.insertRow();
+                const quantidade = parseFloat(e.quantidade) || 0;
+                const estoqueMinimo = parseFloat(e.estoque_minimo) || 0;
+                
+                const statusClass = quantidade <= estoqueMinimo ? 
+                    (quantidade <= estoqueMinimo * 0.5 ? 'status-critical' : 'status-alert') : 
+                    'status-ok';
+                
+                const statusText = quantidade <= estoqueMinimo ? 
+                    (quantidade <= estoqueMinimo * 0.5 ? 'Crítico' : 'Baixo') : 
+                    'OK';
+
+                row.innerHTML = `
+                    <td>${e.item || ''}</td>
+                    <td>${getSchoolName(e.unidade)}</td>
+                    <td>${quantidade} ${e.unidade_medida || ''}</td>
+                    <td>${estoqueMinimo} ${e.unidade_medida || ''}</td>
+                    <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                    <td>${formatDate(e.ultima_atualizacao)}</td>
+                `;
+            });
+        }
+
+        // Carregar tabela de Resto-Ingestão
+        function loadRestoIngestao() {
+            const tbody = document.getElementById('restoTableBody');
+            tbody.innerHTML = '';
+
+            if (!dados.restoingestao) return;
+
+            const filtered = dados.restoingestao.filter(r => 
+                selectedSchool === 'todas' || r.unidade === selectedSchool
+            );
+
+            filtered.forEach(r => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${formatDate(r.data)}</td>
+                    <td>${getSchoolName(r.unidade)}</td>
+                    <td>${getRefeicaoName(r.refeicao)}</td>
+                    <td>${r.preparado || 0}</td>
+                    <td>${r.servido || 0}</td>
+                    <td>${r.resto || 0}</td>
+                    <td>${r.percent_resto || 0}%</td>
+                `;
+            });
+        }
+
+        // Carregar tabela de Laudos
+        function loadLaudos() {
+            const tbody = document.getElementById('laudosTableBody');
+            tbody.innerHTML = '';
+
+            if (!dados.laudos) return;
+
+            const filtered = dados.laudos.filter(l => 
+                selectedSchool === 'todas' || l.unidade === selectedSchool
+            );
+
+            filtered.forEach(l => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${formatDate(l.data)}</td>
+                    <td>${getSchoolName(l.unidade)}</td>
+                    <td>${l.aluno || ''}</td>
+                    <td>${l.diagnostico || ''}</td>
+                    <td>${l.recomendacao || ''}</td>
+                `;
+            });
+        }
+
+        // Carregar tabela de Cardápio
+        function loadCardapio() {
+            const tbody = document.getElementById('cardapioTableBody');
+            tbody.innerHTML = '';
+
+            if (!dados.cardapio) return;
+
+            const filtered = dados.cardapio.filter(c => 
+                selectedSchool === 'todas' || c.unidade === selectedSchool
+            );
+
+            filtered.forEach(c => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${c.mes_ano || ''}</td>
+                    <td>${getSchoolName(c.unidade)}</td>
+                    <td>${(c.conteudo || '').substring(0, 100)}...</td>
+                    <td><button class="btn" onclick="editCardapio('${c.mes_ano}', '${c.unidade}')">Editar</button></td>
+                `;
+            });
+        }
+
+        // Carregar tabela de Compras
+        function loadCompras() {
+            const tbody = document.getElementById('comprasTableBody');
+            tbody.innerHTML = '';
+
+            if (!dados.compras) return;
+
+            const filtered = dados.compras.filter(c => 
+                selectedSchool === 'todas' || c.unidade === selectedSchool
+            );
+
+            filtered.forEach(c => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${c.semana || ''}</td>
+                    <td>${getSchoolName(c.unidade)}</td>
+                    <td>${c.produtos || ''}</td>
+                    <td>R$ ${parseFloat(c.valor_total || 0).toFixed(2).replace('.', ',')}</td>
+                    <td>${c.status || ''}</td>
+                    <td>${formatDate(c.entrega)}</td>
+                `;
+            });
+        }
+
+        // Carregar tabela de Gás
+        function loadGas() {
+            const tbody = document.getElementById('gasTableBody');
+            tbody.innerHTML = '';
+
+            if (!dados.gas) return;
+
+            const filtered = dados.gas.filter(g => 
+                selectedSchool === 'todas' || g.unidade === selectedSchool
+            );
+
+            filtered.forEach(g => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${formatDate(g.data)}</td>
+                    <td>${getSchoolName(g.unidade)}</td>
+                    <td>${g.botijao_trocado === 'sim' ? 'Sim' : 'Não'}</td>
+                    <td>${g.peso_anterior || 0} kg</td>
+                    <td>${g.peso_atual || 0} kg</td>
+                    <td>${g.consumo || 0} kg</td>
+                    <td>${g.dias_uso || 0} dias</td>
+                `;
+            });
+        }
+
+        // Carregar lista de POPs
+        function loadPops() {
+            const ul = document.getElementById('popsList');
+            ul.innerHTML = '';
+
+            if (!dados.pops) return;
+
+            dados.pops.forEach(p => {
+                const li = document.createElement('li');
+                li.style = "padding: 10px; border: 1px solid #ddd; margin: 5px 0; border-radius: 8px;";
+                li.innerHTML = `<strong>${p.codigo || ''}</strong> - ${p.descricao || ''}`;
+                ul.appendChild(li);
+            });
+        }
+
+        // Carregar tabela de Higienização
+        function loadHigienizacao() {
+            const tbody = document.getElementById('higienizacaoTableBody');
+            tbody.innerHTML = '';
+
+            if (!dados.higienizacao) return;
+
+            dados.higienizacao.forEach(h => {
+                const row = tbody.insertRow();
+                const statusClass = h.status === 'ok' ? 'status-ok' : 'status-alert';
+                row.innerHTML = `
+                    <td>${h.local || ''}</td>
+                    <td>${formatDateTime(h.data_hora)}</td>
+                    <td><span class="status-badge ${statusClass}">${(h.status || '').charAt(0).toUpperCase() + (h.status || '').slice(1)}</span></td>
+                `;
+            });
+        }
+
+        // Carregar tabela de Consumo
+        function loadConsumo() {
+            const tbody = document.getElementById('consumoTableBody');
+            tbody.innerHTML = '';
+
+            if (!dados.consumo) return;
+
+            const filtered = dados.consumo.filter(c => 
+                selectedSchool === 'todas' || c.unidade === selectedSchool
+            );
+
+            filtered.forEach(c => {
+                const row = tbody.insertRow();
+                const quantidade = parseFloat(c.quantidade) || 0;
+                const custoUnitario = parseFloat(c.custo_unitario) || 0;
+                const custoTotal = quantidade * custoUnitario;
+                
+                row.innerHTML = `
+                    <td>${formatDate(c.data)}</td>
+                    <td>${getSchoolName(c.unidade)}</td>
+                    <td>${c.produto || ''}</td>
+                    <td>${quantidade}</td>
+                    <td>${c.unidade_medida || ''}</td>
+                    <td>${getRefeicaoName(c.refeicao)}</td>
+                    <td>R$ ${custoUnitario.toFixed(2).replace('.', ',')}</td>
+                    <td>R$ ${custoTotal.toFixed(2).replace('.', ',')}</td>
+                `;
+            });
+        }
+
+        // Formulários
+        document.getElementById('refeicaoForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            
+            data.cafe = parseInt(data.cafe) || 0;
+            data.lanche_matutino = parseInt(data.lanche_matutino) || 0;
+            data.almoco = parseInt(data.almoco) || 0;
+            data.lanche_vespertino = parseInt(data.lanche_vespertino) || 0;
+            data.total = data.cafe + data.lanche_matutino + data.almoco + data.lanche_vespertino;
+            data.timestamp = new Date().toISOString();
+            
+            const result = await sendToAppsScript('add_refeicao', data);
+            
+            if (result.success) {
+                showNotification('Registro de refeições salvo com sucesso!');
+                closeModal('addRefeicaoModal');
+                e.target.reset();
+                loadAllData(); // Recarregar dados
+            } else {
+                showNotification('Erro ao salvar: ' + result.error, true);
+            }
+        });
+
+        document.getElementById('estoqueForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            
+            data.quantidade = parseFloat(data.quantidade) || 0;
+            data.estoque_minimo = parseFloat(data.estoque_minimo) || 0;
+            
+            // Determinar status
+            if (data.quantidade <= data.estoque_minimo * 0.5) {
+                data.status = 'crítico';
+            } else if (data.quantidade <= data.estoque_minimo) {
+                data.status = 'baixo';
+            } else {
+                data.status = 'ok';
+            }
+            
+            data.ultima_atualizacao = new Date().toISOString().split('T')[0];
+            data.timestamp = new Date().toISOString();
+            
+            const result = await sendToAppsScript('add_estoque', data);
+            
+            if (result.success) {
+                showNotification('Estoque atualizado com sucesso!');
+                closeModal('addEstoqueModal');
+                e.target.reset();
+                loadAllData();
+            } else {
+                showNotification('Erro ao salvar: ' + result.error, true);
+            }
+        });
+
+        document.getElementById('restoForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+
+            data.preparado = parseFloat(data.preparado) || 0;
+            data.servido = parseFloat(data.servido) || 0;
+            data.resto = data.preparado - data.servido;
+            data.percent_resto = data.preparado > 0 ? ((data.resto / data.preparado) * 100).toFixed(2) : 0;
+            data.timestamp = new Date().toISOString();
+
+            const result = await sendToAppsScript('add_resto_ingestao', data);
+            
+            if (result.success) {
+                showNotification('Registro de resto-ingestão salvo com sucesso!');
+                closeModal('addRestoModal');
+                e.target.reset();
+                loadAllData();
+            } else {
+                showNotification('Erro ao salvar: ' + result.error, true);
+            }
+        });
+
+        document.getElementById('laudoForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            data.timestamp = new Date().toISOString();
+
+            const result = await sendToAppsScript('add_laudo', data);
+            
+            if (result.success) {
+                showNotification('Laudo diagnóstico salvo com sucesso!');
+                closeModal('addLaudoModal');
+                e.target.reset();
+                loadAllData();
+            } else {
+                showNotification('Erro ao salvar: ' + result.error, true);
+            }
+        });
+
+        document.getElementById('cardapioForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            data.timestamp = new Date().toISOString();
+
+            const result = await sendToAppsScript('add_cardapio', data);
+            
+            if (result.success) {
+                showNotification('Cardápio mensal salvo com sucesso!');
+                closeModal('addCardapioModal');
+                e.target.reset();
+                loadAllData();
+            } else {
+                showNotification('Erro ao salvar: ' + result.error, true);
+            }
+        });
+
+        function editCardapio(mes_ano, unidade) {
+            const cardapio = dados.cardapio.find(c => c.mes_ano === mes_ano && c.unidade === unidade);
+            if (cardapio) {
+                document.querySelector('#addCardapioModal [name="mes_ano"]').value = cardapio.mes_ano;
+                document.querySelector('#addCardapioModal [name="unidade"]').value = cardapio.unidade;
+                document.querySelector('#addCardapioModal [name="conteudo"]').value = cardapio.conteudo;
+                openModal('addCardapioModal');
+            }
+        }
+
+        document.getElementById('compraForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            data.valor_total = parseFloat(data.valor_total) || 0;
+            data.timestamp = new Date().toISOString();
+
+            const result = await sendToAppsScript('add_compra', data);
+            
+            if (result.success) {
+                showNotification('Pedido de compra salvo com sucesso!');
+                closeModal('addCompraModal');
+                e.target.reset();
+                loadAllData();
+            } else {
+                showNotification('Erro ao salvar: ' + result.error, true);
+            }
+        });
+
+        document.getElementById('gasForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+
+            data.peso_anterior = parseFloat(data.peso_anterior) || 0;
+            data.peso_atual = parseFloat(data.peso_atual) || 0;
+            data.consumo = data.peso_atual - data.peso_anterior;
+            data.dias_uso = parseInt(data.dias_uso) || 0;
+            data.timestamp = new Date().toISOString();
+
+            const result = await sendToAppsScript('add_gas', data);
+            
+            if (result.success) {
+                showNotification('Registro de consumo de gás salvo com sucesso!');
+                closeModal('addGasModal');
+                e.target.reset();
+                loadAllData();
+            } else {
+                showNotification('Erro ao salvar: ' + result.error, true);
+            }
+        });
+
+        document.getElementById('popForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            data.timestamp = new Date().toISOString();
+
+            const result = await sendToAppsScript('add_pop', data);
+            
+            if (result.success) {
+                showNotification('POP salvo com sucesso!');
+                closeModal('addPopModal');
+                e.target.reset();
+                loadAllData();
+            } else {
+                showNotification('Erro ao salvar: ' + result.error, true);
+            }
+        });
+
+        document.getElementById('higienizacaoForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+            data.timestamp = new Date().toISOString();
+
+            const result = await sendToAppsScript('add_higienizacao', data);
+            
+            if (result.success) {
+                showNotification('Registro de higienização salvo com sucesso!');
+                closeModal('addHigienizacaoModal');
+                e.target.reset();
+                loadAllData();
+            } else {
+                showNotification('Erro ao salvar: ' + result.error, true);
+            }
+        });
+
+        document.getElementById('consumoForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+
+            data.quantidade = parseFloat(data.quantidade) || 0;
+            data.custo_unitario = parseFloat(data.custo_unitario) || 0;
+            data.custo_total = data.quantidade * data.custo_unitario;
+            data.timestamp = new Date().toISOString();
+
+            const result = await sendToAppsScript('add_consumo', data);
+            
+            if (result.success) {
+                showNotification('Registro de consumo diário salvo com sucesso!');
+                closeModal('addConsumoModal');
+                e.target.reset();
+                loadAllData();
+            } else {
+                showNotification('Erro ao salvar: ' + result.error, true);
+            }
+        });
+
+        // Funções auxiliares
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr + 'T00:00:00');
+            return date.toLocaleDateString('pt-BR');
+        }
+
+        function formatDateTime(dateTimeStr) {
+            if (!dateTimeStr) return '';
+            const date = new Date(dateTimeStr);
+            return date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function getSchoolName(code) {
+            const names = {
+                'tonon': 'EM Armelindo Tonon',
+                'enio': 'EM Ênio Carlos',
+                'filinto': 'EM Filinto Muller',
+                'nilma': 'EM Nilma Glória',
+                'pingo': 'EM Pingo de Gente',
+                'crianca': 'CMEI Criança Feliz',
+                'gramado': 'CMEI Jardim Gramado',
+                'mundo': 'CMEI Mundo da Criança',
+                'cidadao': 'CMEI Pequeno Cidadão',
+                'todas': 'Todas as Unidades'
+            };
+            return names[code] || code;
+        }
+
+        function getRefeicaoName(code) {
+            const names = {
+                'cafe': 'Café da Manhã',
+                'lanche_matutino': 'Lanche Matutino',
+                'almoco': 'Almoço',
+                'lanche_vespertino': 'Lanche Vespertino'
+            };
+            return names[code] || code;
+        }
+
+        // Fechar modal ao clicar fora
+        window.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.remove('active');
+            }
+        });
+
+        // Exportar dados para JSON
+        function exportData() {
+            const dataStr = JSON.stringify(dados, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `dados_nutricional_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Importar dados do JSON
+        function importData(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        dados = JSON.parse(e.target.result);
+                        loadRefeicoes();
+                        loadEstoque();
+                        loadRestoIngestao();
+                        loadLaudos();
+                        loadCardapio();
+                        loadCompras();
+                        loadGas();
+                        loadPops();
+                        loadHigienizacao();
+                        loadConsumo();
+                        updateDashboard();
+                        showNotification('Dados importados com sucesso!');
+                    } catch (error) {
+                        showNotification('Erro ao importar dados: ' + error.message, true);
+                    }
+                };
+                reader.readAsText(file);
+            }
+        }
+    </script>
+</body>
+</html>
+
